@@ -47,3 +47,7 @@ We have also configured a variable `host_os= "linux"` and built conditions aroun
 ### Output
 
 We have configured two output. One to print ec2 public ip and another to print our local public ip.
+
+### Remote State
+
+We have configured terraform to write the state data to a remote data store , which can be shared between multiple team members. This configuration can be seen in `backend.tf`.
