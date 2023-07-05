@@ -1,1 +1,1 @@
-All of the Terraform projects
+All Terraform projects
