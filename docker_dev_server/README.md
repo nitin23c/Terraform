@@ -1,53 +1,75 @@
+# Deploying EC2 Instance with Docker and Network Resources
 
-# Spinning up a Docker Development Server on AWS using Terraform
+This Terraform project aims to automate the deployment of an EC2 instance with Docker preinstalled for development purposes, along with the necessary network resources. By leveraging Terraform's infrastructure-as-code capabilities, we can easily define and manage our infrastructure in a declarative manner.
 
-We will be using terraform to spinup a development server with docker preinstalled on it.
+### Prerequisites:
 
-## Configuring network
+* Install Terraform: Make sure you have Terraform installed on your local machine. You can download it from the official Terraform website (https://www.terraform.io/downloads.html) and follow the installation instructions for your operating system.
 
-We will start with creating a VPC with 10.1.0.0/16 cidr block and move on to make a public subnet.
+### Project Structure:
 
-We will also create a Internet Gateway and attach it to our VPC. To allow the subnet to connect to internet we will create a route table and attach the route table to our VPC and associate this route table with our subnet.
+The project consists of the following files:
 
-This route table will have a default route to access everything on public domain via internet gateway.
+* `state/main.tf` : This file creates S3 bucket to be utilized as remote state for our project.
 
-For us to access the new ec2 instance , we will create a security group with the ingress rule having the cidr block or rather the public ip of our system , while allowing it to egress on `0.0.0.0/0` for all protocols.
+* `state/locals.tf` : This file defines our bucket name which will be created.
 
-## Configure a ssh key pair
+* `main.tf`: This file contains the Terraform configuration code for defining and provisioning the EC2 instance, including the necessary networking resources.
 
-As we will be using a pre generated ssh key pair. We can use following command to generate a key.
+* `variables.tf`: In this file we have defined host os to pickup required template file to setup passwordless ssh to the ec2 instance
 
-    ssh-keygen -t ed25519
+* `provider.tf`: The provider file specifies the required provider (in this case, AWS) and the authentication details.
 
+* `outputs.tf`: This file defines the outputs that will be displayed after the infrastructure is provisioned.
 
-## Configure EC2 instance
+* `datasources.tf` : This file has the datasource for the ami which will be used to provision the ec2 instance.
 
-At this point we should have all the pre-requisites to configure our EC2 instance.
+* `linux-ssh-config.tpl` or `windows-ssh-config.tpl` : This file has has the template which is used to configure passwordless ssh on host system.
 
-We will be using a `t2.micro` instance to stay in the free tier limit of AWS.
+* `userdata.tpl` : This file has the bash script which runs on ec2 instance to install Docker.
 
-And will configure the ec2 instance with the VPC , Subnet  and Security Group created previously.
+### Steps to Deploy the Infrastructure:
 
-We will also use `user_data` to specify the required commands to install pre-requisites of `docker` and eventually install docker.
+1. Configure AWS Credentials: Ensure you have valid AWS access and secret keys with the necessary permissions to create EC2 instances, VPCs, and subnets. You can set these credentials using environment variables or by using the AWS CLI (aws configure).
 
-We will use a provisioner `local-exec` to configure our `~/.ssh/config` to access the newly built ec2 instance with the pre-generated key. 
+2. Open the `variables.tf` file and update the default value of host_os according to your own system. 
 
-To configure `~/.ssh/config` we will be using a template  in our case we are using a linux system and hence `linux-ssh-config.tpl` template file will be used.
+3. Open the `state/locals.tf` and modify the bucket name which needs to be created. Use the same bucket name in `backend.tf`.
 
-## Additional Information
+4. Initialize Terraform: Open a terminal, navigate to the project directory, and run the following command to initialize Terraform and download the required providers:
 
-### Datasources
+```HCL
+terraform init
+```
 
-We have setup two datasources. One for the ami and another one to fetch the public ip of our local system.
+5. Preview Changes: Run the following command to see a preview of the infrastructure changes that will be applied:
 
-### Variables
+```HCL
+terraform plan
+```
+This will display the resources that Terraform plans to create or modify based on the configuration.
 
-We have also configured a variable `host_os= "linux"` and built conditions around it to pickup the correct template file to configure  `~/.ssh/config`.
+6. Apply Changes: If the preview looks correct, apply the changes by running the following command:
 
-### Output
+```HCL
+terraform apply
+```
+Terraform will prompt for confirmation before proceeding. Enter "yes" to proceed with the deployment.
 
-We have configured two output. One to print ec2 public ip and another to print our local public ip.
+7. Monitor Provisioning Progress: Terraform will now provision the defined resources on AWS. You can monitor the progress in the terminal as Terraform outputs the status of each step.
 
-### Remote State
+8. Access the EC2 Instance: Once the provisioning is complete, Terraform will display the outputs defined in the `outputs.tf` file. Look for `demo_ec2_ip` which is EC2 instance's public IP address.
 
-We have configured terraform to write the state data to a remote data store , which can be shared between multiple team members. This configuration can be seen in `backend.tf`.
+9. Connect to the EC2 Instance.
+
+### Cleanup:
+
+To clean up the resources created by Terraform, run the following command:
+
+```HCL
+terraform destroy
+```
+
+Terraform will prompt for confirmation before deleting the resources. Enter "yes" to proceed with the cleanup.
+
+By following this Terraform project, you can easily provision an EC2 instance with Docker preinstalled and set up the required network resources for development purposes. This automation eliminates manual configuration and ensures consistent, reproducible infrastructure deployments.
