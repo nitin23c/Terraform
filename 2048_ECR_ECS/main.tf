@@ -2,7 +2,8 @@ terraform {
   required_version = "~> 1.3"
 
   backend "s3" {
-    bucket = "game-bucket"
+    # replace the bucket name with the bucket name created with backend/main.tf
+    bucket = "game-bucket-name"
     key    = "2048-infra/terraform.tfstate"
     region = "us-east-1"
   }
