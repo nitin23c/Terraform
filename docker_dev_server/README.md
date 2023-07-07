@@ -73,3 +73,7 @@ terraform destroy
 Terraform will prompt for confirmation before deleting the resources. Enter "yes" to proceed with the cleanup.
 
 By following this Terraform project, you can easily provision an EC2 instance with Docker preinstalled and set up the required network resources for development purposes. This automation eliminates manual configuration and ensures consistent, reproducible infrastructure deployments.
+
+```diff
+- The ec2 instance will only be accessible from your own system as the main.tf is configured to pickup your public and create ingress resources limited to your public ip.
+```
